@@ -1,6 +1,7 @@
+import { v4 } from "https://deno.land/std@0.81.0/uuid/mod.ts";
 import { Product } from "../types.ts";
 
-const products: Product[] = [
+let products: Product[] = [
   {
     id: "1",
     name: "product 1",
@@ -31,32 +32,119 @@ const getProducts = ({ response }: { response: any }) => {
   };
 };
 
-// @desc Get Single product
-// @route GET /
-// deno-lint-ignore no-explicit-any
-const getProduct = ({ response }: { response: any }) => {
-  response.body = "get single product";
+// @desc Get single product
+// @route GET /id
+const getProduct = ({
+  params,
+  response,
+}: {
+  params: { id: string };
+  // deno-lint-ignore no-explicit-any
+  response: any;
+}) => {
+  const product: Product | undefined = products.find((p) => p.id === params.id);
+
+  if (product) {
+    response.status = 200;
+    response.body = {
+      success: true,
+      data: product,
+    };
+  } else {
+    response.status = 404;
+    response.body = {
+      success: false,
+      msg: "no product found",
+    };
+  }
 };
 
 // @desc create Single product
 // @route POST /
-// deno-lint-ignore no-explicit-any
-const createProduct = ({ response }: { response: any }) => {
-  response.body = "create product";
+const createProduct = async ({
+  request,
+  response,
+}: {
+  // deno-lint-ignore no-explicit-any
+  request: any;
+  // deno-lint-ignore no-explicit-any
+  response: any;
+}) => {
+  const body = await request.body();
+
+  if (!request.hasBody) {
+    response.status = 404;
+    response.body = {
+      success: false,
+      msg: "No data",
+    };
+  } else {
+    const product: Product = await body.value;
+    product.id = v4.generate();
+    products.push(product);
+    response.status = 201;
+    response.body = {
+      success: true,
+      data: product,
+    };
+  }
 };
 
 // @desc update Single product
 // @route PUT /
-// deno-lint-ignore no-explicit-any
-const updateProduct = ({ response }: { response: any }) => {
-  response.body = "update product";
+const updateProduct = async ({
+  params,
+  request,
+  response,
+}: {
+  params: { id: string };
+  // deno-lint-ignore no-explicit-any
+  request: any;
+  // deno-lint-ignore no-explicit-any
+  response: any;
+}) => {
+  const product: Product | undefined = products.find((p) => p.id === params.id);
+  if (product) {
+    const body = await request.body();
+    const updateData: {
+      name?: string;
+      description?: string;
+      price?: number;
+    } = await body.value;
+
+    products = products.map((p) =>
+      p.id === params.id ? { ...p, ...updateData } : p
+    );
+
+    response.status = 200;
+    response.body = {
+      success: true,
+      data: updateProduct,
+    };
+  } else {
+    response.status = 404;
+    response.body = {
+      success: false,
+      msg: "no product found",
+    };
+  }
 };
 
 // @desc delete Single product
 // @route DELETE /
-// deno-lint-ignore no-explicit-any
-const deleteProduct = ({ response }: { response: any }) => {
-  response.body = "delete product";
+const deleteProduct = ({
+  params,
+  response,
+}: {
+  params: { id: string };
+  // deno-lint-ignore no-explicit-any
+  response: any;
+}) => {
+  products = products.filter((p) => p.id !== params.id);
+  response.body = {
+    success: true,
+    msg: "product removed",
+  };
 };
 
 export { getProducts, getProduct, updateProduct, createProduct, deleteProduct };

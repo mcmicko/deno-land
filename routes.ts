@@ -1,8 +1,18 @@
 import { Router } from "https://deno.land/x/oak/mod.ts";
-import { getProducts } from "./controllers/products.ts";
+import {
+  createProduct,
+  deleteProduct,
+  getProduct,
+  getProducts,
+  updateProduct,
+} from "./controllers/products.ts";
 
 const router = new Router();
 
-router.get("/", getProducts);
+router.get("/products", getProducts);
+router.post("/products", createProduct);
+router.get("/products/:id", getProduct);
+router.put("/products/:id", updateProduct);
+router.delete("/products/:id", deleteProduct);
 
 export default router;
